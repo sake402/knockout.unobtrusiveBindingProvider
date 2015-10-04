@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>KnockoutJS.UnobtrusiveBindingsProvider</title>
+    <link href="Styles/Index.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="content"></div>
+    <div id="reservations">
+        <h2>Your seat reservations (<span id="count">0</span>)</h2>
+        <ul id="availableMeals">
+            <li>
+                <input class="name" value="Name" />
+                <input class="price" value="Price" />
+            </li>
+        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Passenger name</th>
+                    <th>Meal</th>
+                    <th>Surcharge</th>
+                    <th>Additions</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="seats">
+                <tr>
+                    <td><input class="name" /></td>
+                    <td><select class="meal test"></select></td>
+                    <td class="meal-formattedPrice"></td>
+                    <td><select class="additions"></select></td>
+                    <td class="additions-list"></td>
+                    <td><a href="#" class="removeSeat">Remove</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <button id="addSeat">Reserve another seat</button>
+        <h3 class="test showSurcharge">
+            Total surcharge: $<span id="totalSurcharge">0.00</span>
+        </h3>
+    </div>
+    <script src="Scripts/knockout-3.3.0.js"></script>
+    <script src="Scripts/knockout.unobtrusiveBindingsProvider.min.js"></script>
+    <script src="Scripts/index.min.js"></script>
+</body>
+</html>
