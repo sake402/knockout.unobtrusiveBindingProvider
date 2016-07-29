@@ -1,0 +1,20 @@
+[
+  {
+    "outputFileName": "Scripts/knockout.unobtrusiveBindingsProvider.min.js",
+    "inputFiles": [
+      "Scripts/knockout.unobtrusiveBindingsProvider.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/index.min.js",
+    "inputFiles": [
+      "Scripts/index.js"
+    ]
+  },
+  {
+    "outputFileName": "Styles/Index.min.css",
+    "inputFiles": [
+      "Styles/Index.css"
+    ]
+  }
+]

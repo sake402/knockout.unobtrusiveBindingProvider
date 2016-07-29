@@ -10,27 +10,83 @@
         });
     })(ko.extenders);
     (function (bindingProvider) {
-        ko.utils.extend(bindingProvider, {
-            find: function (source, targets) {
-                var name = "", value = undefined;
+        var NameValuePair = (function () {
+            function NameValuePair(name, value) {
+                this.name = name;
+                this.value = value;
+            }
+            NameValuePair.prototype.toString = function (node) {
+                var value = this.value, name = this.name, nodeName = node.nodeName.toLowerCase();
+                if (!value) {
+                    return undefined;
+                }
+                var binding = "text";
+                switch (nodeName) {
+                    case "input":
+                    case "select":
+                        binding = "value";
+                }
+                if (ko.isObservable(value)) {
+                    var v = value.peek();
+                    if (v && v.push) {
+                        binding = nodeName === "select" ? "selectedOptions" : "foreach";
+                    }
+                    else if (typeof v === "object" && binding === "text") {
+                        binding = "with";
+                    }
+                }
+                else if (value instanceof Function) {
+                    binding = "click";
+                }
+                else if (value.push) {
+                    binding = nodeName === "select" ? "selectedOptions" : "foreach";
+                }
+                else if (typeof value === "object") {
+                    binding = "with";
+                }
+                var b = value.binding;
+                if (b) {
+                    binding = b;
+                }
+                b = value.bindings;
+                if (b) {
+                    if (typeof b !== "string") {
+                        if (b.override) {
+                            return b.value;
+                        }
+                        b = Bindings.from(b.value);
+                    }
+                    binding = b + "," + binding;
+                }
+                return binding + ":" + name;
+            };
+            return NameValuePair;
+        }());
+        var Bindings = (function () {
+            function Bindings() {
+            }
+            Bindings.find = function (source, targets) {
+                var target = "", value = undefined;
                 for (var i = 0, l = targets.length; i < l && value === undefined; i++) {
-                    name = targets[i];
-                    if (name) {
-                        value = source[name];
-                        if (value === undefined && /-/.test(name)) {
-                            var names = name.split(/-/g);
+                    target = targets[i];
+                    if (target) {
+                        value = source[target];
+                        if (value === undefined && /-/.test(target)) {
+                            var names = target.split("-");
                             for (var j = 0, m = names.length; j < m; j++) {
-                                name = names[j];
-                                value = source[name];
+                                target = names[j];
+                                value = source[target];
                                 if (value === undefined) {
                                     break;
                                 }
-                                else if (j < m - 1) {
-                                    if (ko.isObservable(value)) {
+                                else if (ko.isObservable(value)) {
+                                    if (j < m - 1) {
                                         names[j] += "()";
-                                        value = ko.unwrap(value);
                                     }
-                                    if (value && typeof value === "object") {
+                                    source = ko.unwrap(value);
+                                }
+                                else if (j < m - 1) {
+                                    if (typeof value === "object") {
                                         source = value;
                                     }
                                     else {
@@ -38,162 +94,113 @@
                                         break;
                                     }
                                 }
-                            }
-                            name = names.join(".");
-                        }
-                    }
-                }
-                return value === undefined ? null : { name: name, value: value };
-            },
-            from: function (obj) {
-                switch (typeof obj) {
-                    case "string": return obj.valueOf();
-                    case "object":
-                        if (obj) {
-                            var bindings = [];
-                            for (var name in obj) {
-                                if (obj.hasOwnProperty(name)) {
-                                    var v = obj[name];
-                                    if (!(v === null || v === undefined)) {
-                                        if (typeof v === "string") {
-                                            v = "'" + v + "'";
-                                        }
-                                        else if (typeof v === "object") {
-                                            v = "{" + bindingProvider["from"](v) + "}";
-                                        }
-                                        else if (typeof v === "function") {
-                                            window[v = "fn" + Date.now()] = obj[name];
-                                        }
-                                        bindings.push(name + ":" + v);
-                                    }
+                                else if (typeof value === "object") {
+                                    value = "with";
+                                }
+                                else if (typeof value === "function") {
+                                    value = "click";
                                 }
                             }
-                            return bindings.join(",");
+                            target = names.join(".");
                         }
-                    default:
-                        return null;
-                }
-            },
-            getBindingsString: function (r, node) {
-                var name = r.name, value = r.value, binding = "text", nodeName = node.nodeName.toLowerCase();
-                if (!value) {
-                    return null;
-                }
-                switch (nodeName) {
-                    case "input":
-                    case "select":
-                        binding = "value";
-                }
-                var process = function (value) {
-                    if (!value) {
-                        return;
                     }
-                    if (value instanceof Array) {
-                        binding = nodeName === "select" ? "selectedOptions" : "foreach";
-                    }
-                    else if (typeof value === "object" && binding === "text") {
-                        binding = "with";
-                    }
-                };
-                ko.isObservable(value) ? (function () {
-                    process(value.peek());
-                    binding = value.binding || binding;
-                })() : value instanceof Function ? binding = "click" : process(value);
-                var b = value.bindings;
-                if (b) {
-                    if (typeof b !== "string") {
-                        if (b.override) {
-                            return b.value;
-                        }
-                        b = bindingProvider["from"](b.value);
-                    }
-                    binding = "" + b + "," + binding;
                 }
-                return binding + ":" + name;
+                return value === undefined ? null : new NameValuePair(target, value);
+            };
+            ;
+            Bindings.from = function (value) {
+                return typeof value === "string" ? value : (value = ko.toJSON(value)).substr(1, value.length - 2);
+            };
+            ;
+            return Bindings;
+        }());
+        Object.defineProperty(Node.prototype, "classNames", {
+            get: function () {
+                return this.className.trim().replace(/(\s|\u00A0){2,}/g, " ").split(/(\s|\u00A0)/g).filter(function (s) { return s !== " "; });
             }
         });
-        (function (instance) {
-            instance.getBindingsString = function (node, bindingContext) { return node.getBindingsString(bindingContext, bindingProvider["bindings"]); };
-            instance.nodeHasBindings = function (node) { return node.nodeType === 1 && !!(node.id || node.name || node.className); };
-        })(bindingProvider.instance);
-        HTMLElement.prototype.getBindingsString = function (bindingContext, bindings) {
+        Object.defineProperty(HTMLElement.prototype, "targets", {
+            get: function () {
+                var values = [];
+                if (this.id) {
+                    values.push(this.id);
+                }
+                if (this.name) {
+                    values.push(this.name);
+                }
+                if (this.className) {
+                    values = values.concat(this.classNames);
+                }
+                return values;
+            }
+        });
+        Object.defineProperty(HTMLBodyElement.prototype, "path", {
+            get: function () { return ""; }
+        });
+        Object.defineProperty(Node.prototype, "path", {
+            get: function () {
+                var value = this.nodeName.toLowerCase();
+                if (this.id) {
+                    value += "#" + this.id;
+                }
+                if (this.className) {
+                    value += "." + this.classNames.join(".");
+                }
+                if (this.name) {
+                    value += "?" + this.name;
+                }
+                var parentPath = this.parentNode.path;
+                if (parentPath) {
+                    parentPath += "/";
+                }
+                return parentPath + value;
+            }
+        });
+        var cache = {};
+        HTMLElement.prototype.getBindingsString = function (bindingContext) {
             if (this.nodeType === 1) {
-                var path = this.path, result = Node["cache"][path];
-                if (result === undefined) {
-                    var names = [this.id, this.name].concat(this.className.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, "").replace(/(\s|\u00A0){2,}/g, " ").split(/(\s|\u00A0)/g));
-                    if (names.length) {
-                        var data = bindingContext.$data, overridden = undefined, r, i, l;
-                        var process = function (bindings) {
-                            if (!(bindings && bindings.length)) {
-                                return;
+                var path = this.path;
+                var value = cache[path];
+                if (value === undefined) {
+                    var targets_1 = this.targets;
+                    if (targets_1.length) {
+                        var overridden = undefined, nvp_1 = Bindings.find(ko.bindings, targets_1);
+                        if (nvp_1) {
+                            var v = nvp_1.value;
+                            if (v && v.bindings) {
+                                overridden = v.override;
+                                v = v.bindings;
                             }
-                            for (i = 0, l = bindings.length; i < l; i++) {
-                                if (!bindings[i]) {
-                                    continue;
-                                }
-                                r = bindingProvider["find"](bindings[i], names);
-                                if (r) {
-                                    var v = r.value;
-                                    if (v && v.bindings) {
-                                        overridden = v.override;
-                                        v = v.bindings;
-                                    }
-                                    result = bindingProvider["from"](v);
-                                }
-                                if (overridden) {
-                                    break;
-                                }
-                            }
-                        };
-                        process([bindings, data.bindings]);
+                            value = Bindings.from(v);
+                        }
                         if (!overridden) {
-                            r = bindingProvider["find"](data, names);
-                            var parents = bindingContext.$parents;
-                            for (i = 0, l = parents.length; i < l && !r; i++) {
-                                r = bindingProvider["find"](parents[i], names);
-                                if (r) {
-                                    r.name = "$parents[" + i + "]." + r.name;
-                                }
+                            nvp_1 = Bindings.find(bindingContext.$data, targets_1);
+                            if (!nvp_1) {
+                                bindingContext.$parents.forEach(function (parent, i) {
+                                    nvp_1 = Bindings.find(parent, targets_1);
+                                    if (nvp_1) {
+                                        nvp_1.name = "$parents[" + i + "]." + nvp_1.name;
+                                    }
+                                });
                             }
-                            if (r) {
-                                var s = bindingProvider["getBindingsString"](r, this);
-                                result ? result += "," + s : result = s;
+                            if (nvp_1) {
+                                var s = nvp_1.toString(this);
+                                s && value ? value += "," + s : value = s;
                             }
                         }
-                        Node["cache"][path] = result;
                     }
+                    cache[path] = value || null;
                 }
-                if (result && location.hostname === "localhost") {
-                    this.setAttribute("data-bind", result);
+                if (value && location.hostname === "localhost") {
+                    this.setAttribute("data-bind", value);
                 }
-                return result;
+                return value;
             }
             return undefined;
         };
+        (function (instance) {
+            instance.getBindingsString = function (node, bindingContext) { return node.getBindingsString(bindingContext); };
+            instance.nodeHasBindings = function (node) { return node.nodeType === 1 && (node.id || node.name || node.className); };
+        })(bindingProvider.instance);
     })(ko.bindingProvider);
 })(ko);
-Node["cache"] = {};
-Object.defineProperty(HTMLBodyElement.prototype, "path", {
-    get: function () {
-        return "";
-    }
-});
-Object.defineProperty(Node.prototype, "path", {
-    get: function () {
-        var value = this.nodeName.toLowerCase();
-        if (this.id) {
-            value += "#" + this.id;
-        }
-        if (this.name) {
-            value += ":" + this.name;
-        }
-        if (this.className) {
-            value += "." + this.className.replace(/(\s|\u00A0){2,}/g, " ").replace(/\s/g, ".");
-        }
-        var parentPath = this.parentNode.path;
-        if (parentPath) {
-            parentPath += "/";
-        }
-        return parentPath + value;
-    }
-});
