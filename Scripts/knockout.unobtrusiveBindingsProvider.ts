@@ -14,6 +14,9 @@ interface KnockoutStatic {
             },
             bindings(target: any, bindings: any) {
                 return ko.utils.extend(target, { bindings: bindings });
+            },
+            ignore(target: any, ignore: boolean) {
+                return ko.utils.extend(target, { ignore: ignore });
             }
         });
     })(ko.extenders);
@@ -22,40 +25,38 @@ interface KnockoutStatic {
             constructor(public name: string, public value: any) { }
             toString(node: Node) {
                 const value = this.value, name = this.name, nodeName = node.nodeName.toLowerCase();
-                if (!value) {
-                    return undefined;
+                if (!value || value.ignore) {
+                    return void 0;
                 }
                 let binding = "text";
-                switch (nodeName) {
-                    case "input":
-                    case "select":
-                        binding = "value";
-                }
-                if (ko.isObservable(value)) {
-                    const v = value.peek();
-                    if (v && v.push) {
-                        binding = nodeName === "select" ? "selectedOptions" : "foreach";
-                    } else if (typeof v === "object" && binding === "text") {
-                        binding = "with";
-                    }
-                } else if (value instanceof Function) {
-                    binding = "click";
-                } else if (value.push) {
-                    binding = nodeName === "select" ? "selectedOptions" : "foreach";
-                } else if (typeof value === "object") {
-                    binding = "with";
-                }
                 let b = value.binding;
                 if (b) {
                     binding = b;
+                } else {
+                    switch (nodeName) {
+                        case "input":
+                        case "select":
+                            binding = "value";
+                    }
+                    if (ko.isObservable(value)) {
+                        const v = value.peek();
+                        if (v && v.push) {
+                            binding = nodeName === "select" ? "selectedOptions" : "foreach";
+                        } else if (typeof v === "object" && binding === "text") {
+                            binding = "with";
+                        }
+                    } else if (typeof value === "function") {
+                        binding = "click";
+                    } else if (value.push) {
+                        binding = nodeName === "select" ? "selectedOptions" : "foreach";
+                    } else if (typeof value === "object") {
+                        binding = "with";
+                    }
                 }
                 b = value.bindings;
                 if (b) {
                     if (typeof b !== "string") {
-                        if (b.override) {
-                            return b.value;
-                        }
-                        b = Bindings.from(b.value);
+                        b = Bindings.from(b);
                     }
                     binding = `${b},${binding}`;
                 }
@@ -64,17 +65,17 @@ interface KnockoutStatic {
         }
         class Bindings {
             static find(source: any, targets: string[]) {
-                let target = "", value = undefined;
-                for (var i = 0, l = targets.length; i < l && value === undefined; i++) {
+                let target = "", value = void 0;
+                for (var i = 0, l = targets.length; i < l && value === void 0; i++) {
                     target = targets[i];
                     if (target) {
                         value = source[target];
-                        if (value === undefined && /-/.test(target)) {
+                        if (value === void 0 && /-/.test(target)) {
                             const names = target.split("-");
                             for (var j = 0, m = names.length; j < m; j++) {
                                 target = names[j];
                                 value = source[target];
-                                if (value === undefined) {
+                                if (value === void 0) {
                                     break;
                                 } else if (ko.isObservable(value)) {
                                     if (j < m - 1) {
@@ -85,7 +86,7 @@ interface KnockoutStatic {
                                     if (typeof value === "object") {
                                         source = value;
                                     } else {
-                                        value = undefined;
+                                        value = void 0;
                                         break;
                                     }
                                 } else if (typeof value === "object") {
@@ -98,7 +99,7 @@ interface KnockoutStatic {
                         }
                     }
                 }
-                return value === undefined ? null : new NameValuePair(target, value);
+                return value === void 0 ? null : new NameValuePair(target, value);
             };
             static from(value: any) {
                 return typeof value === "string" ? value : (value = ko.toJSON(value)).substr(1, value.length - 2);
@@ -151,13 +152,13 @@ interface KnockoutStatic {
             if (this.nodeType === 1) { // HTML elements only
                 const path = this.path;
                 let value = cache[path];
-                if (value === undefined) { // First time
+                if (value === void 0) { // First time
                     const targets = this.targets;
                     if (targets.length) { // has an id, a name or classes
-                        let overridden = undefined, nvp = Bindings.find(ko.bindings, targets);
+                        let overridden = void 0, nvp = Bindings.find(ko.bindings, targets);
                         if (nvp) {
                             let v = nvp.value;
-                            if (v && v.bindings) {
+                            if (v.bindings) {
                                 overridden = v.override;
                                 v = v.bindings;
                             }
@@ -186,7 +187,7 @@ interface KnockoutStatic {
                 }
                 return value;
             }
-            return undefined;
+            return void 0;
         };
         ((instance) => {
             instance.getBindingsString = (node: HTMLElement, bindingContext: KnockoutBindingContext) => node.getBindingsString(bindingContext);

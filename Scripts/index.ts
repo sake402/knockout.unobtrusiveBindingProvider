@@ -29,7 +29,7 @@ class Reservations {
     seats = ko.observableArray([
         new Seat("Steve", this.meals[0]),
         new Seat("Bert", this.meals[1], this.additions.filter((item, index) => index !== 1))
-    ]).extend({ bindings: { value: { attr: { title: "seats" } } } });
+    ]).extend({ bindings: { attr: { title: "seats" } } });
     showSurcharge: KnockoutComputed<boolean>;
     totalSurcharge: KnockoutComputed<string>;
     constructor() {
@@ -42,7 +42,7 @@ class Reservations {
 }
 var model = new Reservations();
 ko.bindings = {
-    "additions-list": { bindings: "text:additions" },
+    "list(additions)": { bindings: "text:additions" },
     content: "template:'reservations'",
     "seats-table": "visible:count"
 };

@@ -6,6 +6,9 @@
             },
             bindings: function (target, bindings) {
                 return ko.utils.extend(target, { bindings: bindings });
+            },
+            ignore: function (target, ignore) {
+                return ko.utils.extend(target, { ignore: ignore });
             }
         });
     })(ko.extenders);
@@ -17,44 +20,43 @@
             }
             NameValuePair.prototype.toString = function (node) {
                 var value = this.value, name = this.name, nodeName = node.nodeName.toLowerCase();
-                if (!value) {
-                    return undefined;
+                if (!value || value.ignore) {
+                    return void 0;
                 }
                 var binding = "text";
-                switch (nodeName) {
-                    case "input":
-                    case "select":
-                        binding = "value";
-                }
-                if (ko.isObservable(value)) {
-                    var v = value.peek();
-                    if (v && v.push) {
-                        binding = nodeName === "select" ? "selectedOptions" : "foreach";
-                    }
-                    else if (typeof v === "object" && binding === "text") {
-                        binding = "with";
-                    }
-                }
-                else if (value instanceof Function) {
-                    binding = "click";
-                }
-                else if (value.push) {
-                    binding = nodeName === "select" ? "selectedOptions" : "foreach";
-                }
-                else if (typeof value === "object") {
-                    binding = "with";
-                }
                 var b = value.binding;
                 if (b) {
                     binding = b;
                 }
+                else {
+                    switch (nodeName) {
+                        case "input":
+                        case "select":
+                            binding = "value";
+                    }
+                    if (ko.isObservable(value)) {
+                        var v = value.peek();
+                        if (v && v.push) {
+                            binding = nodeName === "select" ? "selectedOptions" : "foreach";
+                        }
+                        else if (typeof v === "object" && binding === "text") {
+                            binding = "with";
+                        }
+                    }
+                    else if (typeof value === "function") {
+                        binding = "click";
+                    }
+                    else if (value.push) {
+                        binding = nodeName === "select" ? "selectedOptions" : "foreach";
+                    }
+                    else if (typeof value === "object") {
+                        binding = "with";
+                    }
+                }
                 b = value.bindings;
                 if (b) {
                     if (typeof b !== "string") {
-                        if (b.override) {
-                            return b.value;
-                        }
-                        b = Bindings.from(b.value);
+                        b = Bindings.from(b);
                     }
                     binding = b + "," + binding;
                 }
@@ -66,17 +68,17 @@
             function Bindings() {
             }
             Bindings.find = function (source, targets) {
-                var target = "", value = undefined;
-                for (var i = 0, l = targets.length; i < l && value === undefined; i++) {
+                var target = "", value = void 0;
+                for (var i = 0, l = targets.length; i < l && value === void 0; i++) {
                     target = targets[i];
                     if (target) {
                         value = source[target];
-                        if (value === undefined && /-/.test(target)) {
+                        if (value === void 0 && /-/.test(target)) {
                             var names = target.split("-");
                             for (var j = 0, m = names.length; j < m; j++) {
                                 target = names[j];
                                 value = source[target];
-                                if (value === undefined) {
+                                if (value === void 0) {
                                     break;
                                 }
                                 else if (ko.isObservable(value)) {
@@ -90,7 +92,7 @@
                                         source = value;
                                     }
                                     else {
-                                        value = undefined;
+                                        value = void 0;
                                         break;
                                     }
                                 }
@@ -105,7 +107,7 @@
                         }
                     }
                 }
-                return value === undefined ? null : new NameValuePair(target, value);
+                return value === void 0 ? null : new NameValuePair(target, value);
             };
             ;
             Bindings.from = function (value) {
@@ -161,13 +163,13 @@
             if (this.nodeType === 1) {
                 var path = this.path;
                 var value = cache[path];
-                if (value === undefined) {
+                if (value === void 0) {
                     var targets_1 = this.targets;
                     if (targets_1.length) {
-                        var overridden = undefined, nvp_1 = Bindings.find(ko.bindings, targets_1);
+                        var overridden = void 0, nvp_1 = Bindings.find(ko.bindings, targets_1);
                         if (nvp_1) {
                             var v = nvp_1.value;
-                            if (v && v.bindings) {
+                            if (v.bindings) {
                                 overridden = v.override;
                                 v = v.bindings;
                             }
@@ -196,7 +198,7 @@
                 }
                 return value;
             }
-            return undefined;
+            return void 0;
         };
         (function (instance) {
             instance.getBindingsString = function (node, bindingContext) { return node.getBindingsString(bindingContext); };

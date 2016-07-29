@@ -27,7 +27,7 @@ var Reservations = (function () {
         this.seats = ko.observableArray([
             new Seat("Steve", this.meals[0]),
             new Seat("Bert", this.meals[1], this.additions.filter(function (item, index) { return index !== 1; }))
-        ]).extend({ bindings: { value: { attr: { title: "seats" } } } });
+        ]).extend({ bindings: { attr: { title: "seats" } } });
         this.count = ko.computed(function () { return _this.seats().length; });
         this.totalSurcharge = ko.computed(function () { return _this.seats().reduce(function (total, seat) { return (total + Number(seat.meal().price())); }, 0).toFixed(2); });
         this.showSurcharge = ko.computed(function () { return _this.totalSurcharge() !== "0.00"; }).extend({ binding: "visible" });
@@ -38,7 +38,7 @@ var Reservations = (function () {
 }());
 var model = new Reservations();
 ko.bindings = {
-    "additions-list": { bindings: "text:additions" },
+    "list(additions)": { bindings: "text:additions" },
     content: "template:'reservations'",
     "seats-table": "visible:count"
 };
