@@ -19,7 +19,7 @@
                 this.value = value;
             }
             NameValuePair.prototype.toString = function (node) {
-                var value = this.value, name = this.name, nodeName = node.nodeName.toLowerCase();
+                var value = this.value, nodeName = node.nodeName.toLowerCase();
                 if (!value || value.ignore) {
                     return void 0;
                 }
@@ -60,7 +60,7 @@
                     }
                     binding = b + "," + binding;
                 }
-                return binding + ":" + name;
+                return binding + ":" + this.name;
             };
             return NameValuePair;
         }());
@@ -95,12 +95,6 @@
                                         value = void 0;
                                         break;
                                     }
-                                }
-                                else if (typeof value === "object") {
-                                    value = "with";
-                                }
-                                else if (typeof value === "function") {
-                                    value = "click";
                                 }
                             }
                             target = names.join(".");

@@ -24,7 +24,7 @@ interface KnockoutStatic {
         class NameValuePair {
             constructor(public name: string, public value: any) { }
             toString(node: Node) {
-                const value = this.value, name = this.name, nodeName = node.nodeName.toLowerCase();
+                const value = this.value, nodeName = node.nodeName.toLowerCase();
                 if (!value || value.ignore) {
                     return void 0;
                 }
@@ -60,7 +60,7 @@ interface KnockoutStatic {
                     }
                     binding = `${b},${binding}`;
                 }
-                return binding + ":" + name;
+                return binding + ":" + this.name;
             }
         }
         class Bindings {
@@ -89,10 +89,6 @@ interface KnockoutStatic {
                                         value = void 0;
                                         break;
                                     }
-                                } else if (typeof value === "object") {
-                                    value = "with";
-                                } else if (typeof value === "function") {
-                                    value = "click";
                                 }
                             }
                             target = names.join(".");
