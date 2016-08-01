@@ -36,7 +36,7 @@ class Reservations {
         this.count = ko.computed(() => this.seats().length);
         this.totalSurcharge = ko.computed(() => this.seats().reduce((total, seat) => (total + Number(seat.meal().price())), 0).toFixed(2));
         this.showSurcharge = ko.computed(() => this.totalSurcharge() !== "0.00").extend({ binding: "visible" });
-        this.addSeat = ko.utils.extend(() => { this.seats.push(new Seat("", this.meals[0])); }, { bindings: "enable:seats().length<5" });
+        this.addSeat = ko.utils.extend(() => { this.seats.push(new Seat("", this.meals[0])); }, { /*binding: "mouseover",*/ bindings: "enable:seats().length<5" });
         this.removeSeat = seat => this.seats.remove(seat);
     }
 }
@@ -46,4 +46,4 @@ ko.bindings = {
     content: "template:'reservations'",
     "seats-table": "visible:count"
 };
-ko.applyBindings(model, document.getElementById("content")); 
+ko.applyBindings(model, document.getElementById("content"));
