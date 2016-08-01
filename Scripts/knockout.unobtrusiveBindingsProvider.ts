@@ -168,7 +168,7 @@ interface KnockoutStatic {
                 }
                 cache[path] = value || null;
             }
-            if (value && location.hostname === "localhost") {
+            if (value && (location.hostname === "localhost" || location.protocol === "file:")) {
                 this.setAttribute("data-bind", value);
             }
             return value;
