@@ -42,7 +42,7 @@ class Reservations {
 }
 var model = new Reservations();
 ko.bindings = {
-    "list(additions)": { bindings: "text:additions" },
+    "list-additions": { bindings: "text:additions" },
     content: "template:'reservations'",
     "seats-table": "visible:count"
 };
