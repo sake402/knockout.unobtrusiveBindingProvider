@@ -175,13 +175,14 @@
                 }
                 cache[path] = value || null;
             }
-            if (value && (location.hostname === "localhost" || location.protocol === "file:")) {
+            if (value && ko.debug) {
                 this.setAttribute("data-bind", value);
             }
             return value;
         }
         return void 0;
     };
+    ko.debug = location.hostname === "localhost" || location.protocol === "file:";
     (function (extenders) {
         ko.utils.extend(extenders, {
             binding: function (target, value) {

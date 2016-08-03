@@ -4,9 +4,10 @@
 
 interface KnockoutStatic {
     bindings: any;
+    debug: boolean;
 }
 
-((ko) => {
+((ko: KnockoutStatic) => {
     class NameValuePair {
         constructor(public name: string, public value: any) { }
         toString(node: Node) {
@@ -168,14 +169,15 @@ interface KnockoutStatic {
                 }
                 cache[path] = value || null;
             }
-            if (value && (location.hostname === "localhost" || location.protocol === "file:")) {
+            if (value && ko.debug) {
                 this.setAttribute("data-bind", value);
             }
             return value;
         }
         return void 0;
     };
-    ((extenders) => {
+    ko.debug = location.hostname === "localhost" || location.protocol === "file:";
+    ((extenders: KnockoutExtenders) => {
         ko.utils.extend(extenders, {
             binding(target: any, value: string) {
                 return ko.utils.extend(target, { binding: value });
