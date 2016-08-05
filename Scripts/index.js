@@ -25,7 +25,7 @@ var Reservations = (function () {
             new Meal("Ultimate (whole zebra)", 290)
         ], { bindings: "attr:{title:'available meals'}" });
         this.seats = ko.observableArray([
-            new Seat("Steve", this.meals[0]),
+            new Seat("Fred", this.meals[0]),
             new Seat("Bert", this.meals[1], this.additions.filter(function (item, index) { return index !== 1; }))
         ]).extend({ bindings: { attr: { title: "seats" } } });
         this.count = ko.computed(function () { return _this.seats().length; });
