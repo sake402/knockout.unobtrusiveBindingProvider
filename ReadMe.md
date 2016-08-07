@@ -82,3 +82,11 @@ Review the `index.html` file for examples and test it with [this jsFiddle](http:
 License
 -------
 MIT [http://www.opensource.org/licenses/mit-license.php](http://www.opensource.org/licenses/mit-license.php)
+
+Nuget
+-----
+[knockout.unobtrusiveBindingProvider](https://www.nuget.org/packages/knockout.unobtrusiveBindingProvider/)
+
+Further reading
+---------------
+See [Unobtrusive databinding in Knockout JS](http://stevenbey.com/unobtrusive-databinding-in-knockout-js).
