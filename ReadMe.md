@@ -6,7 +6,7 @@
 As Knockout traverses the DOM,  the *unobtrusiveBindingProvider* analyses each HTML element and:
 
 1. Using the id, name (for \<input> or \<select></select> tags) or a class name, attempts to map to a member of the current `$data` object; and
-2. Determines what binding syntax should be used (see the Table below).
+2. Based on the HTML element and the type of the member, determines what binding should be used (see the Table below).
 
 | HTML element | Member type | Binding |
 |--------------|-------------|---------|
