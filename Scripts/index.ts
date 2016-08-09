@@ -29,7 +29,7 @@ class Reservations {
     seats = ko.observableArray([
         new Seat("Fred", this.meals[0]),
         new Seat("Bert", this.meals[1], this.additions.filter((item, index) => index !== 1))
-    ]).extend({ bindings: { attr: { title: "seats" } } });
+    ]).extend({ bindings: "attr:{title:'seats'}" });
     showSurcharge: KnockoutComputed<boolean>;
     totalSurcharge: KnockoutComputed<string>;
     constructor() {

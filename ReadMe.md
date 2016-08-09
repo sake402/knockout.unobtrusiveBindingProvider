@@ -77,7 +77,7 @@ Dependencies
 
 Examples
 --------
-Review the `index.html` file for examples and test it with [this jsFiddle](http://jsfiddle.net/stevenbey/nhbygo49/).
+Review the `index.html` file for examples and test it with jsFiddle: [Unobtrusive databinding in Knockout JS](http://jsfiddle.net/stevenbey/nhbygo49/).
 
 License
 -------
