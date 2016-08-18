@@ -4,8 +4,8 @@
             this.name = name;
             this.value = value;
         }
-        NameValuePair.prototype.toString = function (node) {
-            var value = this.value, nodeName = node.nodeName.toLowerCase();
+        NameValuePair.prototype.toString = function (element) {
+            var value = this.value, nodeName = element.nodeName.toLowerCase();
             if (!value || value.ignore) {
                 return void 0;
             }
@@ -33,6 +33,10 @@
                 }
                 else if (typeof v === "function") {
                     binding = "click";
+                }
+                else if (typeof v === "boolean") {
+                    var t = element.type;
+                    binding = t === "checkbox" || t === "radio" ? "checked" : "visible";
                 }
                 else if (typeof v === "object" && binding === "text") {
                     binding = "with";

@@ -24,7 +24,7 @@ class Reservations {
         new Meal("Standard (sandwich)"),
         new Meal("Premium (lobster)", 34.95),
         new Meal("Ultimate (whole zebra)", 290)
-    ], { bindings: "attr:{title:'available meals'}" });
+    ], { bindings: "visible:editable" });
     removeSeat: (seat: Seat) => void;
     seats = ko.observableArray([
         new Seat("Fred", this.meals[0]),
@@ -32,10 +32,11 @@ class Reservations {
     ]).extend({ bindings: "attr:{title:'seats'}" });
     showSurcharge: KnockoutComputed<boolean>;
     totalSurcharge: KnockoutComputed<string>;
+    editable = ko.observable(true);
     constructor() {
         this.count = ko.computed(() => this.seats().length);
         this.totalSurcharge = ko.computed(() => this.seats().reduce((total, seat) => (total + Number(seat.meal().price())), 0).toFixed(2));
-        this.showSurcharge = ko.computed(() => this.totalSurcharge() !== "0.00").extend({ binding: "visible" });
+        this.showSurcharge = ko.computed(() => this.totalSurcharge() !== "0.00");
         this.addSeat = ko.utils.extend(() => { this.seats.push(new Seat("", this.meals[0])); }, { /*binding: "mouseover",*/ bindings: "enable:seats().length<5" });
         this.removeSeat = seat => this.seats.remove(seat);
     }

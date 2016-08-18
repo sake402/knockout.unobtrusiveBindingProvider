@@ -6,17 +6,19 @@
 As Knockout traverses the DOM,  the *unobtrusiveBindingProvider* analyses each HTML element and:
 
 1. Using the `id`, `name` (for `<input>` or `<select>` tags) or a `class` name, attempts to map to a member of the current `$data` object; and
-2. Based on the HTML element and the type of the member, determines what binding should be used (see the Table below).
+2. Based on the HTML element and the type of the member, determines what binding should be used:
 
-| HTML element | Member type | Binding |
-|--------------|-------------|---------|
-| \* | Number, String |	text |
-| \* | Object, Observable | with |
-| \* | Array, ObservableArray | foreach |
-| \* | Function | click |
-| input | Number, String, Observable | value |
-| select | Object, Number, String, Observable | value |
-| select | Array, ObservableArray | selectedOptions |
+    HTML element | Member type | Binding
+    -------------|-------------|--------
+    \* | Number, String | text
+    \* | Boolean | visible
+    \* | Object, Observable | with
+    \* | Array, ObservableArray | foreach
+    \* | Function | click
+    input | Number, String, Observable | value
+    input[type="checkbox\|radio"] | Boolean | checked
+    select | Object, Number, String, Observable | value
+    select | Array, ObservableArray | selectedOptions
 
 * If the appropriate member isn't found, in the current context, the *unobtrusiveBindingProvider* will attempt to find one by bubbling up through the parent contexts.
 * Where an element has multiple classes and a member hasn't already been mapped, the *unobtrusiveBindingProvider* will attempt to map each class until a member has been found.
@@ -33,9 +35,9 @@ If a member is an Array or Function the `ko.utils.extend` method can be used to 
 
 ```js
 this.meals = ko.utils.extend([
-    new Meal("Standard (sandwich)"),
-    new Meal("Premium (lobster)", 34.95),
-    new Meal("Ultimate (whole zebra)", 290)
+new Meal("Standard (sandwich)"),
+new Meal("Premium (lobster)", 34.95),
+new Meal("Ultimate (whole zebra)", 290)
 ], { bindings: "attr:{title:'available meals'}" });
 ```
 
@@ -59,7 +61,7 @@ HTML elements that don't map to a member of the model will be mapped to a member
 
 ```js
 ko.bindings = {
-    content: "template:'reservations'"
+content: "template:'reservations'"
 };
 ```
 

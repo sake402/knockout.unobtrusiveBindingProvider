@@ -23,14 +23,15 @@ var Reservations = (function () {
             new Meal("Standard (sandwich)"),
             new Meal("Premium (lobster)", 34.95),
             new Meal("Ultimate (whole zebra)", 290)
-        ], { bindings: "attr:{title:'available meals'}" });
+        ], { bindings: "visible:editable" });
         this.seats = ko.observableArray([
             new Seat("Fred", this.meals[0]),
             new Seat("Bert", this.meals[1], this.additions.filter(function (item, index) { return index !== 1; }))
         ]).extend({ bindings: "attr:{title:'seats'}" });
+        this.editable = ko.observable(true);
         this.count = ko.computed(function () { return _this.seats().length; });
         this.totalSurcharge = ko.computed(function () { return _this.seats().reduce(function (total, seat) { return (total + Number(seat.meal().price())); }, 0).toFixed(2); });
-        this.showSurcharge = ko.computed(function () { return _this.totalSurcharge() !== "0.00"; }).extend({ binding: "visible" });
+        this.showSurcharge = ko.computed(function () { return _this.totalSurcharge() !== "0.00"; });
         this.addSeat = ko.utils.extend(function () { _this.seats.push(new Seat("", _this.meals[0])); }, { bindings: "enable:seats().length<5" });
         this.removeSeat = function (seat) { return _this.seats.remove(seat); };
     }

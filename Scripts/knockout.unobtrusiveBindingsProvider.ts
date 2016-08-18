@@ -10,8 +10,8 @@ interface KnockoutStatic {
 ((ko: KnockoutStatic) => {
     class NameValuePair {
         constructor(public name: string, public value: any) { }
-        toString(node: Node) {
-            const value = this.value, nodeName = node.nodeName.toLowerCase();
+        toString(element: HTMLInputElement) {
+            const value = this.value, nodeName = element.nodeName.toLowerCase();
             if (!value || value.ignore) {
                 return void 0;
             }
@@ -37,6 +37,9 @@ interface KnockoutStatic {
                     binding = nodeName === "select" ? "selectedOptions" : "foreach";
                 } else if (typeof v === "function") {
                     binding = "click";
+                } else if (typeof v === "boolean") {
+                    const t = element.type;
+                    binding = t === "checkbox" || t === "radio" ? "checked" : "visible";
                 } else if (typeof v === "object" && binding === "text") {
                     binding = "with";
                 }
