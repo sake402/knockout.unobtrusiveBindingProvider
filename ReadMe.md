@@ -5,20 +5,20 @@
 
 As Knockout traverses the DOM,  the *unobtrusiveBindingProvider* analyses each HTML element and:
 
-1. Using the `id`, `name` (for `<input>` or `<select>` tags) or a `class` name, attempts to map to a member of the current `$data` object; and
+1. Using the `id`, `name` (for `<input>` or `<select>` tags) or each `class` name, attempts to map to a member of the current `$data` object; and
 2. Based on the HTML element and the type of the member, determines what binding should be used:
 
     HTML element | Member type | Binding
     -------------|-------------|--------
-    \* | Number, String | text
-    \* | Boolean | visible
-    \* | Object, Observable | with
-    \* | Array, ObservableArray | foreach
-    \* | Function | click
-    input | Number, String, Observable | value
-    input[type="checkbox\|radio"] | Boolean | checked
-    select | Object, Number, String, Observable | value
-    select | Array, ObservableArray | selectedOptions
+    \* | Number, String | [text](http://knockoutjs.com/documentation/text-binding.html)
+    \* | Boolean | [visible](http://knockoutjs.com/documentation/visible-binding.html)
+    \* | Object, Observable | [with](http://knockoutjs.com/documentation/with-binding.html)
+    \* | Array, ObservableArray | [foreach](http://knockoutjs.com/documentation/foreach-binding.html)
+    \* | Function | [click](http://knockoutjs.com/documentation/click-binding.html)
+    input | Number, String, Observable | [value](http://knockoutjs.com/documentation/value-binding.html)
+    input[type="checkbox\|radio"] | Boolean | [checked](http://knockoutjs.com/documentation/checked-binding.html)
+    select | Object, Number, String, Observable | [value](http://knockoutjs.com/documentation/value-binding.html)
+    select | Array, ObservableArray | [selectedOptions](http://knockoutjs.com/documentation/selectedOptions-binding.html)
 
 * If the appropriate member isn't found, in the current context, the *unobtrusiveBindingProvider* will attempt to find one by bubbling up through the parent contexts.
 * Where an element has multiple classes and a member hasn't already been mapped, the *unobtrusiveBindingProvider* will attempt to map each class until a member has been found.
@@ -35,9 +35,9 @@ If a member is an Array or Function the `ko.utils.extend` method can be used to 
 
 ```js
 this.meals = ko.utils.extend([
-new Meal("Standard (sandwich)"),
-new Meal("Premium (lobster)", 34.95),
-new Meal("Ultimate (whole zebra)", 290)
+    new Meal("Standard (sandwich)"),
+    new Meal("Premium (lobster)", 34.95),
+    new Meal("Ultimate (whole zebra)", 290)
 ], { bindings: "attr:{title:'available meals'}" });
 ```
 
@@ -61,7 +61,7 @@ HTML elements that don't map to a member of the model will be mapped to a member
 
 ```js
 ko.bindings = {
-content: "template:'reservations'"
+    content: "template:'reservations'"
 };
 ```
 
@@ -79,7 +79,8 @@ Dependencies
 
 Examples
 --------
-Review the `index.html` file for examples and test it with jsFiddle: [Unobtrusive databinding in Knockout JS](http://jsfiddle.net/stevenbey/nhbygo49/).
+Review the `index.html` file for examples and test it with jsFiddle: <!--[Unobtrusive databinding in Knockout JS](http://jsfiddle.net/stevenbey/nhbygo49/).-->
+<iframe width="100%" height="1060" src="//jsfiddle.net/stevenbey/nhbygo49/embedded/html,js,result" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
 
 License
 -------
