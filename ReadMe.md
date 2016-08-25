@@ -79,7 +79,7 @@ Dependencies
 
 Examples
 --------
-Review the `index.html` file for examples and test it with jsFiddle: <!--[Unobtrusive databinding in Knockout JS](http://jsfiddle.net/stevenbey/nhbygo49/).-->
+Review the `index.html` file for examples and test it with jsFiddle:
 <iframe width="100%" height="1060" src="//jsfiddle.net/stevenbey/nhbygo49/embedded/html,js,result" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
 
 License
