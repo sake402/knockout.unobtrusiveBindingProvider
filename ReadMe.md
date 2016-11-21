@@ -8,17 +8,17 @@ As Knockout traverses the DOM,  the *unobtrusiveBindingProvider* analyses each H
 1. Using the `id`, `name` (for `<input>` or `<select>` tags) or each `class` name, attempts to map to a member of the current `$data` object; and
 2. Based on the HTML element and the type of the member, determines what binding should be used:
 
-    HTML element | Member type | Binding
+    HTML element | Member type/Observable's underlying type | Binding
     -------------|-------------|--------
     \* | Number, String | [text](http://knockoutjs.com/documentation/text-binding.html)
     \* | Boolean | [visible](http://knockoutjs.com/documentation/visible-binding.html)
-    \* | Object, Observable | [with](http://knockoutjs.com/documentation/with-binding.html)
-    \* | Array, ObservableArray | [foreach](http://knockoutjs.com/documentation/foreach-binding.html)
+    \* | Object | [with](http://knockoutjs.com/documentation/with-binding.html)
+    \* | Array | [foreach](http://knockoutjs.com/documentation/foreach-binding.html)
     \* | Function | [click](http://knockoutjs.com/documentation/click-binding.html)
-    input | Number, String, Observable | [value](http://knockoutjs.com/documentation/value-binding.html)
+    input | Number, String | [value](http://knockoutjs.com/documentation/value-binding.html)
     input[type="checkbox\|radio"] | Boolean | [checked](http://knockoutjs.com/documentation/checked-binding.html)
-    select | Object, Number, String, Observable | [value](http://knockoutjs.com/documentation/value-binding.html)
-    select | Array, ObservableArray | [selectedOptions](http://knockoutjs.com/documentation/selectedOptions-binding.html)
+    select | Number, String, Object | [value](http://knockoutjs.com/documentation/value-binding.html)
+    select | Array | [selectedOptions](http://knockoutjs.com/documentation/selectedOptions-binding.html)
 
 * If the appropriate member isn't found, in the current context, the *unobtrusiveBindingProvider* will attempt to find one by bubbling up through the parent contexts.
 * Where an element has multiple classes and a member hasn't already been mapped, the *unobtrusiveBindingProvider* will attempt to map each class until a member has been found.
