@@ -233,15 +233,15 @@ interface KnockoutVirtualElements {
         instance.nodeHasBindings = (node: HTMLInputElement) => (node.nodeType === 1 && (node.id || node.name || node.className)) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node));
     })(ko.bindingProvider.instance);
     ((virtualElements) => {
-        var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*data\[(?:([a-zA-Z]\w*))\]\s*--\x3e$/ : /^\s*data\[(?:([a-zA-Z]\w*))\]\s*$/;
-        var endCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*\/data\s*--\x3e$/ : /^\s*\/data\s*$/;
+        var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*(?:([a-zA-Z]\w*))\:\s*--\x3e$/ : /^\s*(?:([a-zA-Z]\w*))\:\s*$/;
+        var endCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*\/(?:([a-zA-Z]\w*))\s*--\x3e$/ : /^\s*\/(?:([a-zA-Z]\w*))\s*$/;
         var isStartComment = (node: Comment) => {
             return node.nodeType === 8 && startCommentRegex.test(node.text);
         };
         var isEndComment = (node: Comment) => {
             return node.nodeType === 8 && endCommentRegex.test(node.text);
         };
-        var getVirtualChildren = (startComment: Node, allowUnbalanced = true) => {
+        var getVirtualChildren = (startComment: Node, allowUnbalanced = false) => {
             var currentNode = startComment;
             var depth = 1;
             var children = [];
@@ -258,7 +258,7 @@ interface KnockoutVirtualElements {
                     depth++;
             }
             if (!allowUnbalanced)
-                throw new Error(`Cannot find closing comment tag to match: ${startComment.nodeValue}`);
+                throw new Error(`Cannot find closing comment tag to match: ${ko.virtualElements.virtualNodeBindingValue(startComment as Comment)}`);
             return null;
         };
         var getMatchingEndComment = (startComment: Node, allowUnbalanced = false) => {

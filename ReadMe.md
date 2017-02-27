@@ -5,7 +5,7 @@
 
 As Knockout traverses the DOM,  the *unobtrusiveBindingProvider* analyses each HTML element and:
 
-1. Using the `id`, `name` (for `<input>` or `<select>` tags), each `class` name or <code>data[<em>member</em>]</code> (for virtual elements: see below), attempts to map to a member of the current `$data` object; and
+1. Using the `id`, `name` (for `<input>` or `<select>` tags), each `class` name or <code><em>member</em>:</code> (for virtual elements; see below), attempts to map to a member of the current `$data` object; and
 2. Determines what binding should be used, based on the HTML element and the type of the member:
 
     HTML element | Member type/Observable's underlying type | Binding
@@ -41,7 +41,13 @@ this.meals = ko.utils.extend([
 ], { bindings: "attr:{title:'available meals'}" });
 ```
 
-Note: for binding to primitive type arrays, use the `item` placeholder, `<span class="item"></span>`.
+Note: for binding to primitive type arrays, use the `item` placeholder:
+
+```html
+<ul id="additions">
+    <li class="item"></li>
+</ul>
+```
 
 Overriding the binding of a function will map the binding to the [`event` binding](http://knockoutjs.com/documentation/event-binding.html)
 
@@ -77,14 +83,14 @@ Note: the *unobtrusiveBindingProvider* automatically sets `ko.debug` to `true` w
 
 ##### Virtual Elements
 
-The *unobtrusiveBindingProvider* supports virtual elements:
+The *unobtrusiveBindingProvider* uses the following syntax, for virtual elements:
 
 ```html
 <ul>
-    <!-- data[meals] -->
+    <!-- additions: -->
     <li class="item"></li>
-    <!-- /data -->
-    <li>Daily Specials</li>
+    <!-- /additions -->
+    <li>Other</li>
 <ul>
 ```
 

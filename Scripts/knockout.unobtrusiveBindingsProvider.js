@@ -229,8 +229,8 @@ var _this = this;
         instance.nodeHasBindings = function (node) { return (node.nodeType === 1 && (node.id || node.name || node.className)) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node)); };
     })(ko.bindingProvider.instance);
     (function (virtualElements) {
-        var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*data\[(?:([a-zA-Z]\w*))\]\s*--\x3e$/ : /^\s*data\[(?:([a-zA-Z]\w*))\]\s*$/;
-        var endCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*\/data\s*--\x3e$/ : /^\s*\/data\s*$/;
+        var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*(?:([a-zA-Z]\w*))\:\s*--\x3e$/ : /^\s*(?:([a-zA-Z]\w*))\:\s*$/;
+        var endCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*\/(?:([a-zA-Z]\w*))\s*--\x3e$/ : /^\s*\/(?:([a-zA-Z]\w*))\s*$/;
         var isStartComment = function (node) {
             return node.nodeType === 8 && startCommentRegex.test(node.text);
         };
@@ -238,7 +238,7 @@ var _this = this;
             return node.nodeType === 8 && endCommentRegex.test(node.text);
         };
         var getVirtualChildren = function (startComment, allowUnbalanced) {
-            if (allowUnbalanced === void 0) { allowUnbalanced = true; }
+            if (allowUnbalanced === void 0) { allowUnbalanced = false; }
             var currentNode = startComment;
             var depth = 1;
             var children = [];
@@ -253,7 +253,7 @@ var _this = this;
                     depth++;
             }
             if (!allowUnbalanced)
-                throw new Error("Cannot find closing comment tag to match: " + startComment.nodeValue);
+                throw new Error("Cannot find closing comment tag to match: " + ko.virtualElements.virtualNodeBindingValue(startComment));
             return null;
         };
         var getMatchingEndComment = function (startComment, allowUnbalanced) {
