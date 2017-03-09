@@ -45,9 +45,6 @@ var _this = this;
             }
             b = value.bindings;
             if (b) {
-                if (typeof b !== "string") {
-                    b = Bindings.from(b);
-                }
                 binding = b + "," + binding;
             }
             return binding + ":" + this.name;
@@ -101,10 +98,6 @@ var _this = this;
                 }
             }
             return value === void 0 ? null : new NameValuePair(target, value);
-        };
-        ;
-        Bindings.from = function (value) {
-            return typeof value === "string" ? value : (value = ko.toJSON(value).replace(/\{"|,"|"[:]/gi, function (m) { return m.replace(/"/, ""); })).substr(1, value.length - 2);
         };
         ;
         return Bindings;
@@ -183,7 +176,7 @@ var _this = this;
                             overridden = v.override;
                             v = v.bindings;
                         }
-                        value = Bindings.from(v);
+                        value = v;
                     }
                     if (!overridden) {
                         nvp_1 = Bindings.find(bindingContext.$data, targets);

@@ -56,9 +56,6 @@ interface KnockoutVirtualElements {
             }
             b = value.bindings;
             if (b) {
-                if (typeof b !== "string") {
-                    b = Bindings.from(b);
-                }
                 binding = `${b},${binding}`;
             }
             return binding + ":" + this.name;
@@ -105,9 +102,6 @@ interface KnockoutVirtualElements {
                 }
             }
             return value === void 0 ? null : new NameValuePair(target, value);
-        };
-        static from(value: any) {
-            return typeof value === "string" ? value : (value = ko.toJSON(value).replace(/\{"|,"|"[:]/gi, m => m.replace(/"/, ""))).substr(1, value.length - 2);
         };
     }
     var commentNodesHaveTextProperty = document && document.createComment("test").text === "<!--test-->";
@@ -179,7 +173,7 @@ interface KnockoutVirtualElements {
             let value = cache[path];
             if (value === void 0) { // First time
                 var targets = this.targets;
-                if (targets.length) { // has an id, a name or classes
+                if (targets.length) { // has an id, a name, classes or is a virutal element
                     let overridden = void 0, nvp = Bindings.find(ko.bindings, targets);
                     if (nvp) {
                         let v = nvp.value;
@@ -187,7 +181,7 @@ interface KnockoutVirtualElements {
                             overridden = v.override;
                             v = v.bindings;
                         }
-                        value = Bindings.from(v);
+                        value = v;
                     }
                     if (!overridden) {
                         nvp = Bindings.find(bindingContext.$data, targets);
