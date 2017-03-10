@@ -102,6 +102,7 @@ var _this = this;
         ;
         return Bindings;
     }());
+    var hasValue = function (value) { return value !== void 0 && value !== null && value !== ""; };
     var commentNodesHaveTextProperty = document && document.createComment("test").text === "<!--test-->";
     Object.defineProperty(Node.prototype, "classNames", {
         get: function () {
@@ -219,7 +220,7 @@ var _this = this;
     })(ko.extenders);
     (function (instance) {
         instance.getBindingsString = function (node, bindingContext) { return node.getBindingsString(bindingContext); };
-        instance.nodeHasBindings = function (node) { return (node.nodeType === 1 && (node.id || node.name || node.className)) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node)); };
+        instance.nodeHasBindings = function (node) { return (node.nodeType === 1 && (hasValue(node.id) || hasValue(node.name) || hasValue(node.className))) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node)); };
     })(ko.bindingProvider.instance);
     (function (virtualElements) {
         var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*(?:([a-zA-Z]\w*))\:\s*--\x3e$/ : /^\s*(?:([a-zA-Z]\w*))\:\s*$/;

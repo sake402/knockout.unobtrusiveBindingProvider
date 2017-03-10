@@ -641,6 +641,6 @@ interface KnockoutComponents {
 
 declare var ko: KnockoutStatic;
 
-declare module "knockout" {
-	export = ko;
-}
+//declare module "knockout" {
+//	export = ko;
+//}

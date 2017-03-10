@@ -12,9 +12,14 @@ interface KnockoutUtils {
     emptyDomNode: (node: Node) => void;
 }
 
+interface KnockoutBindingProvider {
+    getBindingsString(node: Node, bindingContext: KnockoutBindingContext): string;
+}
+
 interface KnockoutVirtualElements {
-    hasBindingValue: (node: Node) => boolean;
-    virtualNodeBindingValue: (node: Comment) => boolean;
+    hasBindingValue(node: Node): boolean;
+    virtualNodeBindingValue(node: Comment): string;
+    Fb(container: KnockoutVirtualElement, nodeToInsert: Node, insertAfter: Node): void;
 }
 
 ((ko: KnockoutStatic) => {
@@ -104,6 +109,7 @@ interface KnockoutVirtualElements {
             return value === void 0 ? null : new NameValuePair(target, value);
         };
     }
+    var hasValue = (value: string): boolean => value !== void 0 && value !== null && value !== "";
     var commentNodesHaveTextProperty = document && document.createComment("test").text === "<!--test-->";
     Object.defineProperty(Node.prototype, "classNames", {
         get() {
@@ -224,7 +230,7 @@ interface KnockoutVirtualElements {
     })(ko.extenders);
     ((instance) => {
         instance.getBindingsString = (node: Node, bindingContext: KnockoutBindingContext) => node.getBindingsString(bindingContext);
-        instance.nodeHasBindings = (node: HTMLInputElement) => (node.nodeType === 1 && (node.id || node.name || node.className)) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node));
+        instance.nodeHasBindings = (node: HTMLInputElement) => (node.nodeType === 1 && (hasValue(node.id) || hasValue(node.name) || hasValue(node.className))) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node));
     })(ko.bindingProvider.instance);
     ((virtualElements) => {
         var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*(?:([a-zA-Z]\w*))\:\s*--\x3e$/ : /^\s*(?:([a-zA-Z]\w*))\:\s*$/;
@@ -238,7 +244,7 @@ interface KnockoutVirtualElements {
         var getVirtualChildren = (startComment: Node, allowUnbalanced = false) => {
             var currentNode = startComment;
             var depth = 1;
-            var children = [];
+            var children: Array<Node> = [];
             while ((currentNode = currentNode.nextSibling)) {
                 if (isEndComment(currentNode as Comment)) {
                     depth--;
@@ -265,7 +271,7 @@ interface KnockoutVirtualElements {
                 return null; // Must have no matching end comment, and allowUnbalanced is true
         };
         virtualElements.childNodes = (node: Node) => {
-            return isStartComment(node as Comment) ? getVirtualChildren(node) : node.childNodes;
+            return isStartComment(node as Comment) ? getVirtualChildren(node) : ((node.childNodes as any) as Node[]);
         };
         virtualElements.emptyNode = (node: Node) => {
             if (!isStartComment(node as Comment))
