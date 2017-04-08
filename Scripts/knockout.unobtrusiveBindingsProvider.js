@@ -228,16 +228,16 @@ var _this = this;
         var isStartComment = function (node) {
             return node.nodeType === 8 && startCommentRegex.test(node.text);
         };
-        var isEndComment = function (node) {
-            return node.nodeType === 8 && endCommentRegex.test(node.text);
+        var isEndComment = function (node, start) {
+            return node.nodeType === 8 && endCommentRegex.test(node.text) && virtualElements.virtualNodeBindingValue(node, endCommentRegex) === virtualElements.virtualNodeBindingValue(start);
         };
-        var getVirtualChildren = function (startComment, allowUnbalanced) {
+        var getVirtualChildren = function (start, allowUnbalanced) {
             if (allowUnbalanced === void 0) { allowUnbalanced = false; }
-            var currentNode = startComment;
+            var currentNode = start;
             var depth = 1;
             var children = [];
             while ((currentNode = currentNode.nextSibling)) {
-                if (isEndComment(currentNode)) {
+                if (isEndComment(currentNode, start)) {
                     depth--;
                     if (depth === 0)
                         return children;
@@ -247,19 +247,13 @@ var _this = this;
                     depth++;
             }
             if (!allowUnbalanced)
-                throw new Error("Cannot find closing comment tag to match: " + ko.virtualElements.virtualNodeBindingValue(startComment));
+                throw new Error("Cannot find closing comment tag to match: " + ko.virtualElements.virtualNodeBindingValue(start));
             return null;
         };
-        var getMatchingEndComment = function (startComment, allowUnbalanced) {
+        var getMatchingEndComment = function (start, allowUnbalanced) {
             if (allowUnbalanced === void 0) { allowUnbalanced = false; }
-            var allVirtualChildren = getVirtualChildren(startComment, allowUnbalanced);
-            if (allVirtualChildren) {
-                if (allVirtualChildren.length > 0)
-                    return allVirtualChildren[allVirtualChildren.length - 1].nextSibling;
-                return startComment.nextSibling;
-            }
-            else
-                return null;
+            var allVirtualChildren = getVirtualChildren(start, allowUnbalanced);
+            return allVirtualChildren ? (allVirtualChildren.length > 0 ? allVirtualChildren[allVirtualChildren.length - 1].nextSibling : start.nextSibling) : null;
         };
         virtualElements.childNodes = function (node) {
             return isStartComment(node) ? getVirtualChildren(node) : node.childNodes;
@@ -312,20 +306,23 @@ var _this = this;
         virtualElements.firstChild = function (node) {
             if (!isStartComment(node))
                 return node.firstChild;
-            if (!node.nextSibling || isEndComment(node.nextSibling))
+            if (!node.nextSibling || isEndComment(node.nextSibling, node))
                 return null;
             return node.nextSibling;
         };
         virtualElements.nextSibling = function (node) {
-            if (isStartComment(node))
-                node = getMatchingEndComment(node);
-            if (node.nextSibling && isEndComment(node.nextSibling))
+            var start = null;
+            if (isStartComment(node)) {
+                start = node;
+                node = getMatchingEndComment(start);
+            }
+            if (node.nextSibling && isEndComment(node.nextSibling, start))
                 return null;
             return node.nextSibling;
         };
         virtualElements.hasBindingValue = isStartComment;
-        virtualElements.virtualNodeBindingValue = function (node) {
-            var regexMatch = (node.text).match(startCommentRegex);
+        virtualElements.virtualNodeBindingValue = function (node, regex) {
+            var regexMatch = (node.text).match(regex || startCommentRegex);
             return regexMatch ? regexMatch[1] : null;
         };
     })(ko.virtualElements);

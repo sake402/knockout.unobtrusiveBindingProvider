@@ -1,27 +1,23 @@
-﻿interface Node {
+﻿// ReSharper disable InconsistentNaming
+interface Node {
     text: string;
     getBindingsString(bindingContext: KnockoutBindingContext): string;
 }
-
 interface KnockoutStatic {
     bindings: any;
     debug: boolean;
 }
-
 interface KnockoutUtils {
     emptyDomNode: (node: Node) => void;
 }
-
 interface KnockoutBindingProvider {
     getBindingsString(node: Node, bindingContext: KnockoutBindingContext): string;
 }
-
 interface KnockoutVirtualElements {
     hasBindingValue(node: Node): boolean;
-    virtualNodeBindingValue(node: Comment): string;
+    virtualNodeBindingValue(node: Comment, regex?: RegExp): string;
     Fb(container: KnockoutVirtualElement, nodeToInsert: Node, insertAfter: Node): void;
 }
-
 ((ko: KnockoutStatic) => {
     class NameValuePair {
         constructor(public name: string, public value: any) { }
@@ -235,18 +231,18 @@ interface KnockoutVirtualElements {
     ((virtualElements) => {
         var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*(?:([a-zA-Z]\w*))\:\s*--\x3e$/ : /^\s*(?:([a-zA-Z]\w*))\:\s*$/;
         var endCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*\/(?:([a-zA-Z]\w*))\s*--\x3e$/ : /^\s*\/(?:([a-zA-Z]\w*))\s*$/;
-        var isStartComment = (node: Comment) => {
+        var isStartComment = (node: Node) => {
             return node.nodeType === 8 && startCommentRegex.test(node.text);
         };
-        var isEndComment = (node: Comment) => {
-            return node.nodeType === 8 && endCommentRegex.test(node.text);
+        var isEndComment = (node: Node, start: Comment) => {
+            return node.nodeType === 8 && endCommentRegex.test(node.text) && virtualElements.virtualNodeBindingValue(node as Comment, endCommentRegex) === virtualElements.virtualNodeBindingValue(start);
         };
-        var getVirtualChildren = (startComment: Node, allowUnbalanced = false) => {
-            var currentNode = startComment;
+        var getVirtualChildren = (start: Comment, allowUnbalanced = false) => {
+            var currentNode = start;
             var depth = 1;
             var children: Array<Node> = [];
-            while ((currentNode = currentNode.nextSibling)) {
-                if (isEndComment(currentNode as Comment)) {
+            while ((currentNode = currentNode.nextSibling as Comment)) {
+                if (isEndComment(currentNode, start)) {
                     depth--;
                     if (depth === 0)
                         return children;
@@ -254,24 +250,19 @@ interface KnockoutVirtualElements {
 
                 children.push(currentNode);
 
-                if (isStartComment(currentNode as Comment))
+                if (isStartComment(currentNode))
                     depth++;
             }
             if (!allowUnbalanced)
-                throw new Error(`Cannot find closing comment tag to match: ${ko.virtualElements.virtualNodeBindingValue(startComment as Comment)}`);
+                throw new Error(`Cannot find closing comment tag to match: ${ko.virtualElements.virtualNodeBindingValue(start)}`);
             return null;
         };
-        var getMatchingEndComment = (startComment: Node, allowUnbalanced = false) => {
-            var allVirtualChildren = getVirtualChildren(startComment, allowUnbalanced);
-            if (allVirtualChildren) {
-                if (allVirtualChildren.length > 0)
-                    return allVirtualChildren[allVirtualChildren.length - 1].nextSibling;
-                return startComment.nextSibling;
-            } else
-                return null; // Must have no matching end comment, and allowUnbalanced is true
+        var getMatchingEndComment = (start: Comment, allowUnbalanced = false) => {
+            var allVirtualChildren = getVirtualChildren(start, allowUnbalanced);
+            return allVirtualChildren ? (allVirtualChildren.length > 0 ? (allVirtualChildren[allVirtualChildren.length - 1].nextSibling as Comment) : (start.nextSibling as Comment)) : /* Must have no matching end comment, and allowUnbalanced is true */ null;
         };
         virtualElements.childNodes = (node: Node) => {
-            return isStartComment(node as Comment) ? getVirtualChildren(node) : ((node.childNodes as any) as Node[]);
+            return isStartComment(node) ? getVirtualChildren(node as Comment) : ((node.childNodes as any) as Node[]);
         };
         virtualElements.emptyNode = (node: Node) => {
             if (!isStartComment(node as Comment))
@@ -319,22 +310,25 @@ interface KnockoutVirtualElements {
             }
         };
         virtualElements.firstChild = (node: Node) => {
-            if (!isStartComment(node as Comment))
+            if (!isStartComment(node))
                 return node.firstChild;
-            if (!node.nextSibling || isEndComment(node.nextSibling as Comment))
+            if (!node.nextSibling || isEndComment(node.nextSibling, node as Comment))
                 return null;
             return node.nextSibling;
         };
         virtualElements.nextSibling = (node: Node) => {
-            if (isStartComment(node as Comment))
-                node = getMatchingEndComment(node);
-            if (node.nextSibling && isEndComment(node.nextSibling as Comment))
+            var start: Comment = null;
+            if (isStartComment(node)) {
+                start = node as Comment;
+                node = getMatchingEndComment(start);
+            }
+            if (node.nextSibling && isEndComment(node.nextSibling, start))
                 return null;
             return node.nextSibling;
         };
         virtualElements.hasBindingValue = isStartComment;
-        virtualElements.virtualNodeBindingValue = (node: Comment) => {
-            var regexMatch = (node.text).match(startCommentRegex);
+        virtualElements.virtualNodeBindingValue = (node: Comment, regex: RegExp) => {
+            var regexMatch = (node.text).match(regex || startCommentRegex);
             return regexMatch ? regexMatch[1] : null;
         };
     })(ko.virtualElements);
