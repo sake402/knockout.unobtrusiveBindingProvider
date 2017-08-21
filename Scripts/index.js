@@ -9,9 +9,11 @@ var Meal = (function () {
 }());
 var Seat = (function () {
     function Seat(name, meal, additions) {
+        var _this = this;
         this.name = name;
         this.meal = ko.observable(meal).extend({ bindings: "options:$root.meals,optionsText:'name'" });
         this.additions = ko.observableArray(additions || []).extend({ bindings: "options:$root.additions,attr:{multiple:'multiple'}" });
+        this.selected = ko.utils.extend(function () { return alert("You have selected: " + _this.meal.peek().name.peek()); }, { binding: "change" });
     }
     return Seat;
 }());

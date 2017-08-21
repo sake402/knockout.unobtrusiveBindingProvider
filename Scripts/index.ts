@@ -11,9 +11,11 @@
 class Seat {
     additions: KnockoutObservableArray<string>;
     meal: KnockoutObservable<Meal>;
+    selected: any;
     constructor(public name: string, meal: Meal, additions?: string[]) {
         this.meal = ko.observable(meal).extend({ bindings: "options:$root.meals,optionsText:'name'" });
         this.additions = ko.observableArray(additions || []).extend({ bindings: "options:$root.additions,attr:{multiple:'multiple'}" });
+        this.selected = ko.utils.extend(() => alert(`You have selected: ${this.meal.peek().name.peek()}`), { binding: "change" });
     }
 }
 class Reservations {

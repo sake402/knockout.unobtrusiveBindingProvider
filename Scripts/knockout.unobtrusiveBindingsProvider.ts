@@ -24,7 +24,7 @@ interface KnockoutVirtualElements {
         toString(element: HTMLInputElement) {
             const value = this.value, nodeName = element.nodeName.toLowerCase();
             if (!value || value.ignore) {
-                return void 0;
+                return "";
             }
             let binding = "text";
             let b = value.binding;
@@ -63,43 +63,38 @@ interface KnockoutVirtualElements {
         }
     }
     class Bindings {
-        static find(source: any, targets: string[]) {
+        static find(source: any, target: string) {
             if (!source) {
                 return null;
             }
-            let target = "", value = void 0;
-            for (var i = 0, l = targets.length; i < l && value === void 0; i++) {
-                target = targets[i];
-                if (target) {
-                    value = source[target];
-                    if (value === void 0) {
-                        if (/-/.test(target)) {
-                            const names = target.split("-");
-                            for (var j = 0, m = names.length; j < m; j++) {
-                                target = names[j];
-                                value = source[target];
-                                if (value === void 0) {
-                                    break;
-                                } else if (ko.isObservable(value)) {
-                                    if (j < m - 1) {
-                                        names[j] += "()";
-                                    }
-                                    source = ko.unwrap(value);
-                                } else if (j < m - 1) {
-                                    if (typeof value === "object") {
-                                        source = value;
-                                    } else {
-                                        value = void 0;
-                                        break;
-                                    }
-                                }
+            let value = void 0;
+            if (target) {
+                value = source[target];
+                if (/-/.test(target)) {
+                    const names = target.split("-");
+                    for (var j = 0, m = names.length; j < m; j++) {
+                        target = names[j];
+                        value = source[target];
+                        if (value === void 0) {
+                            break;
+                        } else if (ko.isObservable(value)) {
+                            if (j < m - 1) {
+                                names[j] += "()";
                             }
-                            target = names.join(".");
-                        } else if (target === "item" && typeof source !== "object") {
-                            target = "$data";
-                            value = source;
+                            source = ko.unwrap(value);
+                        } else if (j < m - 1) {
+                            if (typeof value === "object") {
+                                source = value;
+                            } else {
+                                value = void 0;
+                                break;
+                            }
                         }
                     }
+                    target = names.join(".");
+                } else if (target === "item" && typeof source !== "object") {
+                    target = "$data";
+                    value = source;
                 }
             }
             return value === void 0 ? null : new NameValuePair(target, value);
@@ -170,13 +165,14 @@ interface KnockoutVirtualElements {
     });
     var cache = {};
     Node.prototype.getBindingsString = function (bindingContext: KnockoutBindingContext) {
-        if ([1,8].indexOf(this.nodeType) !== -1) { // HTML elements only
+        if ([1,8].indexOf(this.nodeType) !== -1) { // HTML & Comment elements only
             const path = this.path;
             let value = cache[path];
             if (value === void 0) { // First time
-                var targets = this.targets;
-                if (targets.length) { // has an id, a name, classes or is a virutal element
-                    let overridden = void 0, nvp = Bindings.find(ko.bindings, targets);
+                const targets = this.targets;
+                const bindings = new Array<string>();
+                for (let i = 0; i < targets.length; i++) {  // the id, name, classes or is a virutal element
+                    let overridden = void 0, nvp = Bindings.find(ko.bindings, targets[i]);
                     if (nvp) {
                         let v = nvp.value;
                         if (v.bindings) {
@@ -185,21 +181,27 @@ interface KnockoutVirtualElements {
                         }
                         value = v;
                     }
-                    if (!overridden) {
-                        nvp = Bindings.find(bindingContext.$data, targets);
-                        if (!nvp) {
-                            bindingContext.$parents.forEach((parent, i) => {
-                                nvp = Bindings.find(parent, targets);
-                                if (nvp) {
-                                    nvp.name = `$parents[${i}].${nvp.name}`;
-                                }
-                            });
-                        }
-                        if (nvp) {
-                            const s = nvp.toString(this);
-                            s && value ? value += `,${s}` : value = s;
+                    if (overridden) {
+                        break;
+                    }
+                    nvp = Bindings.find(bindingContext.$data, targets[i]);
+                    if (!nvp) {
+                        const parents = bindingContext.$parents;
+                        for (let j = 0; j < parents.length; j++) {
+                            nvp = Bindings.find(parents[j], targets[i]);
+                            if (nvp) {
+                                nvp.name = `$parents[${j}].${nvp.name}`;
+                                break;
+                            }
                         }
                     }
+                    if (nvp) {
+                        bindings.push(nvp.toString(this));
+                    }
+                }
+                if (bindings.length) {
+                    const s = bindings.join();
+                    s && value ? value += `,${s}` : value = s;
                 }
                 cache[path] = value || null;
             }
@@ -328,7 +330,7 @@ interface KnockoutVirtualElements {
         };
         virtualElements.hasBindingValue = isStartComment;
         virtualElements.virtualNodeBindingValue = (node: Comment, regex: RegExp) => {
-            var regexMatch = (node.text).match(regex || startCommentRegex);
+            var regexMatch = node && (node.text).match(regex || startCommentRegex);
             return regexMatch ? regexMatch[1] : null;
         };
     })(ko.virtualElements);

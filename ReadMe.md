@@ -21,8 +21,8 @@ As Knockout traverses the DOM,  the *unobtrusiveBindingProvider* analyses each H
     select | Array | [selectedOptions](http://knockoutjs.com/documentation/selectedOptions-binding.html)
 
 * If the appropriate member isn't found, in the current context, the *unobtrusiveBindingProvider* will attempt to find one by bubbling up through the parent contexts.
-* Where an element has multiple classes and a member hasn't already been mapped, the *unobtrusiveBindingProvider* will attempt to map each class until a member has been found.
-* If the target (`id`, `name` or `class`) is hyphonated and a member hasn't already been mapped, then the *unobtrusiveBindingProvider* will regard this as a path to a member in the object graph (for example, meal-formattedPrice will be regarded as meal.formattedPrice) and will attempt to navigate through the object graph until it reaches the destination member. However, if any part of the hyphonated target doesn't match a path in the object graph, the mapping will be terminated. If any part of the path is an observable then the parentheses should be *omitted*.
+* Where an element has multiple classes ~~and a member hasn't already been mapped~~, the *unobtrusiveBindingProvider* will attempt to map each class ~~until a member has been found~~.
+* If the target (`id`, `name` or `class`) is hyphonated ~~and a member hasn't already been mapped~~, then the *unobtrusiveBindingProvider* will regard this as a path to a member in the object graph (for example, meal-formattedPrice will be regarded as meal.formattedPrice) and will attempt to navigate through the object graph until it reaches the destination member. However, if any part of the hyphonated target doesn't match a path in the object graph, the mapping will be terminated. If any part of the path is an observable then the parentheses should be *omitted*.
 
 Where a member has been mapped and the member is an observable, the *unobtrusiveBindingProvider* will analyse the member and determine if the mapped binding should be overridden (the `binding` extender) and/or whether there are additional bindings (the `bindings` extender):
 

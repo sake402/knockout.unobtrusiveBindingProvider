@@ -8,7 +8,7 @@ var _this = this;
         NameValuePair.prototype.toString = function (element) {
             var value = this.value, nodeName = element.nodeName.toLowerCase();
             if (!value || value.ignore) {
-                return void 0;
+                return "";
             }
             var binding = "text";
             var b = value.binding;
@@ -54,47 +54,42 @@ var _this = this;
     var Bindings = (function () {
         function Bindings() {
         }
-        Bindings.find = function (source, targets) {
+        Bindings.find = function (source, target) {
             if (!source) {
                 return null;
             }
-            var target = "", value = void 0;
-            for (var i = 0, l = targets.length; i < l && value === void 0; i++) {
-                target = targets[i];
-                if (target) {
-                    value = source[target];
-                    if (value === void 0) {
-                        if (/-/.test(target)) {
-                            var names = target.split("-");
-                            for (var j = 0, m = names.length; j < m; j++) {
-                                target = names[j];
-                                value = source[target];
-                                if (value === void 0) {
-                                    break;
-                                }
-                                else if (ko.isObservable(value)) {
-                                    if (j < m - 1) {
-                                        names[j] += "()";
-                                    }
-                                    source = ko.unwrap(value);
-                                }
-                                else if (j < m - 1) {
-                                    if (typeof value === "object") {
-                                        source = value;
-                                    }
-                                    else {
-                                        value = void 0;
-                                        break;
-                                    }
-                                }
-                            }
-                            target = names.join(".");
+            var value = void 0;
+            if (target) {
+                value = source[target];
+                if (/-/.test(target)) {
+                    var names = target.split("-");
+                    for (var j = 0, m = names.length; j < m; j++) {
+                        target = names[j];
+                        value = source[target];
+                        if (value === void 0) {
+                            break;
                         }
-                        else if (target === "item" && typeof source !== "object") {
-                            target = "$data";
-                            value = source;
+                        else if (ko.isObservable(value)) {
+                            if (j < m - 1) {
+                                names[j] += "()";
+                            }
+                            source = ko.unwrap(value);
+                        }
+                        else if (j < m - 1) {
+                            if (typeof value === "object") {
+                                source = value;
+                            }
+                            else {
+                                value = void 0;
+                                break;
+                            }
                         }
                     }
+                    target = names.join(".");
+                }
+                else if (target === "item" && typeof source !== "object") {
+                    target = "$data";
+                    value = source;
                 }
             }
             return value === void 0 ? null : new NameValuePair(target, value);
@@ -169,31 +164,38 @@ var _this = this;
             var value = cache[path];
             if (value === void 0) {
                 var targets = this.targets;
-                if (targets.length) {
-                    var overridden = void 0, nvp_1 = Bindings.find(ko.bindings, targets);
-                    if (nvp_1) {
-                        var v = nvp_1.value;
+                var bindings = new Array();
+                for (var i = 0; i < targets.length; i++) {
+                    var overridden = void 0, nvp = Bindings.find(ko.bindings, targets[i]);
+                    if (nvp) {
+                        var v = nvp.value;
                         if (v.bindings) {
                             overridden = v.override;
                             v = v.bindings;
                         }
                         value = v;
                     }
-                    if (!overridden) {
-                        nvp_1 = Bindings.find(bindingContext.$data, targets);
-                        if (!nvp_1) {
-                            bindingContext.$parents.forEach(function (parent, i) {
-                                nvp_1 = Bindings.find(parent, targets);
-                                if (nvp_1) {
-                                    nvp_1.name = "$parents[" + i + "]." + nvp_1.name;
-                                }
-                            });
-                        }
-                        if (nvp_1) {
-                            var s = nvp_1.toString(this);
-                            s && value ? value += "," + s : value = s;
+                    if (overridden) {
+                        break;
+                    }
+                    nvp = Bindings.find(bindingContext.$data, targets[i]);
+                    if (!nvp) {
+                        var parents = bindingContext.$parents;
+                        for (var j = 0; j < parents.length; j++) {
+                            nvp = Bindings.find(parents[j], targets[i]);
+                            if (nvp) {
+                                nvp.name = "$parents[" + j + "]." + nvp.name;
+                                break;
+                            }
                         }
                     }
+                    if (nvp) {
+                        bindings.push(nvp.toString(this));
+                    }
+                }
+                if (bindings.length) {
+                    var s = bindings.join();
+                    s && value ? value += "," + s : value = s;
                 }
                 cache[path] = value || null;
             }
@@ -322,7 +324,7 @@ var _this = this;
         };
         virtualElements.hasBindingValue = isStartComment;
         virtualElements.virtualNodeBindingValue = function (node, regex) {
-            var regexMatch = (node.text).match(regex || startCommentRegex);
+            var regexMatch = node && (node.text).match(regex || startCommentRegex);
             return regexMatch ? regexMatch[1] : null;
         };
     })(ko.virtualElements);
