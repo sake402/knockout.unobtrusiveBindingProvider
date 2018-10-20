@@ -29,7 +29,7 @@ var _this = this;
                 if (ko.isObservable(v)) {
                     v = v.peek();
                 }
-                if (v.push) {
+                if (v && v.push) {
                     binding = nodeName === "select" ? "selectedOptions" : "foreach";
                 }
                 else if (typeof v === "function") {
@@ -58,10 +58,28 @@ var _this = this;
             if (!source) {
                 return null;
             }
+
             var value = void 0;
             if (target) {
                 value = source[target];
-                if (/-/.test(target)) {
+                var isSelector = target.startsWith("#") || target.startsWith(".");
+                if (ko.bindings) {
+                    var binding = ko.bindings[target];
+                    if (binding)
+                        isSelector = binding.isSelector || isSelector;
+                }
+                //if (!value) {
+                //    if (isSelector) { // a selector
+                //        var binding = ko.bindings[target];
+                //        if (binding.observe) {
+                //            target = binding.observe;
+                //        } else {
+                //            target = target.slice(1, target.length);
+                //        }
+                //        value = source[target];
+                //    }
+                //}
+                if (isSelector === false && /-/.test(target)) {
                     var names = target.split("-");
                     for (var j = 0, m = names.length; j < m; j++) {
                         target = names[j];
@@ -145,6 +163,14 @@ var _this = this;
     Object.defineProperty(HTMLElement.prototype, "targets", {
         get: function () {
             var values = [];
+            if (jQuery && ko.bindings) {
+                for (k in ko.bindings) {
+                    if (jQuery(this).is(k)) {
+                        values.push(k);
+                        return values;
+                    }
+                }
+            }            
             if (this.id) {
                 values.push(this.id);
             }
@@ -202,7 +228,7 @@ var _this = this;
             if (this.nodeType !== 8 && value && ko.debug) {
                 this.setAttribute("data-bind", value);
             }
-            return value;
+            return value || this.getAttribute("data-bind");
         }
         return void 0;
     };
@@ -222,7 +248,19 @@ var _this = this;
     })(ko.extenders);
     (function (instance) {
         instance.getBindingsString = function (node, bindingContext) { return node.getBindingsString(bindingContext); };
-        instance.nodeHasBindings = function (node) { return (node.nodeType === 1 && (hasValue(node.id) || hasValue(node.name) || hasValue(node.className))) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node)); };
+        instance.nodeHasBindings = function (node) {
+            if (jQuery && ko.bindings) {
+                for (k in ko.bindings) {
+                    if (jQuery(node).is(k)) {
+                        return true;
+                    }
+                }
+            }
+            if (node.getAttribute && node.getAttribute("data-bind")) {
+                return true;
+            }
+            return (node.nodeType === 1 && (hasValue(node.id) || hasValue(node.name) || hasValue(node.className))) || (node.nodeType === 8 && ko.virtualElements.hasBindingValue(node));
+        };
     })(ko.bindingProvider.instance);
     (function (virtualElements) {
         var startCommentRegex = commentNodesHaveTextProperty ? /^\x3c!--\s*(?:([a-zA-Z]\w*))\:\s*--\x3e$/ : /^\s*(?:([a-zA-Z]\w*))\:\s*$/;
